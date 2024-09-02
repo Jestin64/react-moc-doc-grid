@@ -1,26 +1,76 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import { DocumentGrid } from "./components/DocumentGrid";
+import {
+  getLocalStorage,
+  saveDocuments,
+  setLocalStorage,
+} from "./helper/session";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface Document {
+  type: string;
+  title: string;
+  position: number;
 }
+
+const App: React.FC = () => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
+  const [saveDuration, setSaveDuration] = useState<number>(0);
+
+  useEffect(() => {
+    const storedDocs = getLocalStorage();
+    if (!storedDocs) {
+      const fetchDocuments = async () => {
+        const response = await fetch("/api/documents");
+        const data = await response.json();
+        setDocuments(data);
+        setLocalStorage(data);
+      };
+
+      fetchDocuments();
+    } else setDocuments(storedDocs);
+  }, []);
+
+  useEffect(() => {
+    if (hasChanges) {
+      const saveInterval = setInterval(async () => {
+        setLoading(true);
+        const startTime = Date.now(); // Record the start time
+        await saveDocuments(documents);
+        const endTime = Date.now(); // Record the end time
+        setLoading(false);
+        setHasChanges(false);
+        setSaveDuration(endTime - startTime);
+      }, 5000);
+
+      return () => {
+        clearInterval(saveInterval);
+      };
+    }
+  }, [documents, hasChanges]);
+
+  const handleDocumentChange = (newDocuments: Document[]) => {
+    setDocuments(newDocuments);
+    setHasChanges(true);
+  };
+
+  return (
+    <>
+      <DocumentGrid
+        documents={documents}
+        handleDocumentChange={handleDocumentChange}
+        loading={loading}
+      />
+      <div
+        style={{
+          marginLeft: "20%",
+        }}
+      >
+        Time Taken for last Save: {saveDuration} ms
+      </div>
+    </>
+  );
+};
 
 export default App;
