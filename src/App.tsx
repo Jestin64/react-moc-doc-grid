@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { DocumentGrid } from "./components/DocumentGrid";
 import {
   getLocalStorage,
   saveDocuments,
   setLocalStorage,
 } from "./helper/session";
+import _ from "lodash";
+import { Box } from "@mui/material";
 
 interface Document {
   type: string;
@@ -50,13 +52,30 @@ const App: React.FC = () => {
     }
   }, [documents, hasChanges]);
 
+  // comment:  works as expected but removed to due reduce code complexity
+  // const debouncedSetDocuments = useCallback(
+  //   _.debounce((newDocuments: Document[]) => {
+  //     setDocuments(newDocuments);
+  //     setHasChanges(true);
+  //   }, 2000),
+  //   [] // Dependencies array is empty to ensure the function is memoized
+  // );
+
+  // const handleDocumentChange = (newDocuments: Document[]) => {
+  //   debouncedSetDocuments(newDocuments);
+  // };
+
   const handleDocumentChange = (newDocuments: Document[]) => {
     setDocuments(newDocuments);
     setHasChanges(true);
   };
-
   return (
-    <>
+    <Box
+      sx={{
+        padding: "30px 0",
+        backgroundColor: "#faebd7",
+      }}
+    >
       <DocumentGrid
         documents={documents}
         handleDocumentChange={handleDocumentChange}
@@ -67,16 +86,32 @@ const App: React.FC = () => {
           marginLeft: "20%",
         }}
       >
-        {loading && "Saving..."}
+        {loading && (
+          <span
+            style={{
+              fontWeight: 600,
+            }}
+          >
+            Saving...
+          </span>
+        )}
       </div>
       <div
         style={{
           marginLeft: "20%",
         }}
       >
-        Time Taken for last Save: {saveDuration} ms
+        Time Taken for last Save:{" "}
+        <span
+          style={{
+            fontWeight: 600,
+          }}
+        >
+          {saveDuration}
+        </span>{" "}
+        ms
       </div>
-    </>
+    </Box>
   );
 };
 
