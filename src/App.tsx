@@ -34,8 +34,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (hasChanges) {
+      setLoading(true);
       const saveInterval = setInterval(async () => {
-        setLoading(true);
         const startTime = Date.now(); // Record the start time
         await saveDocuments(documents);
         const endTime = Date.now(); // Record the end time
@@ -55,6 +55,8 @@ const App: React.FC = () => {
     setHasChanges(true);
   };
 
+  console.log("loading: ", loading);
+
   return (
     <>
       <DocumentGrid
@@ -68,6 +70,13 @@ const App: React.FC = () => {
         }}
       >
         Time Taken for last Save: {saveDuration} ms
+      </div>
+      <div
+        style={{
+          marginLeft: "20%",
+        }}
+      >
+        {loading && "Saving..."}
       </div>
     </>
   );
