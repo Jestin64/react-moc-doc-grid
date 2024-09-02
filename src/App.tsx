@@ -55,8 +55,6 @@ const App: React.FC = () => {
     setHasChanges(true);
   };
 
-  console.log("loading: ", loading);
-
   return (
     <>
       <DocumentGrid
@@ -69,14 +67,14 @@ const App: React.FC = () => {
           marginLeft: "20%",
         }}
       >
-        Time Taken for last Save: {saveDuration} ms
+        {loading && "Saving..."}
       </div>
       <div
         style={{
           marginLeft: "20%",
         }}
       >
-        {loading && "Saving..."}
+        Time Taken for last Save: {saveDuration} ms
       </div>
     </>
   );
