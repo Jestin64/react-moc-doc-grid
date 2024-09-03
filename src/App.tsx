@@ -74,6 +74,9 @@ const App: React.FC = () => {
       sx={{
         padding: "30px 0",
         backgroundColor: "#faebd7",
+        overflow: "hidden",
+        maxWidth: "100vw",
+        maxHeight: "100vh",
       }}
     >
       <DocumentGrid
@@ -90,6 +93,7 @@ const App: React.FC = () => {
           <span
             style={{
               fontWeight: 600,
+              fontSize: "1.2em",
             }}
           >
             Saving...
@@ -105,6 +109,7 @@ const App: React.FC = () => {
         <span
           style={{
             fontWeight: 600,
+            fontSize: "1.2em",
           }}
         >
           {saveDuration}

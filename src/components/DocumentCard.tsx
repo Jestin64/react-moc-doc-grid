@@ -10,8 +10,8 @@ import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles({
   card: {
-    width: "200px",
-    height: "250px",
+    width: "150px",
+    height: "200px",
     margin: "16px",
     cursor: "pointer",
     display: "flex",

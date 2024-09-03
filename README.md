@@ -1,6 +1,6 @@
 Thank you for taking the time to review my application For FULLSTACK DEVELOPER(FRONTEND bias).
 
-This project was made in React, material-ui, msw, react-beautiful-dnd, lodash for debounced(removed) and done as per the requirements to the best of my knowledge,
+This project was made in React, material-ui, msw, react-beautiful-dnd, lodash for debounced (removed) and done as per the requirements to the best of my knowledge,
 
 Mocked backend rest api calls:
 
