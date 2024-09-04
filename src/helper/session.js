@@ -7,6 +7,8 @@ export const getLocalStorage = () => {
 };
 
 export const saveDocuments = async (documents) => {
+  // code line to simulate throwing error
+  // throw new Error("Network Error");
   return new Promise((resolve) => {
     setTimeout(() => {
       setLocalStorage(documents);

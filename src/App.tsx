@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   const [saveDuration, setSaveDuration] = useState<number>(0);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const storedDocs = getLocalStorage();
@@ -30,7 +31,11 @@ const App: React.FC = () => {
         setLocalStorage(data);
       };
 
-      fetchDocuments();
+      // error handling
+      fetchDocuments().catch((error) => {
+        console.error("Error fetching documents: ", error);
+        setError(error);
+      });
     } else setDocuments(storedDocs);
   }, []);
 
@@ -39,11 +44,17 @@ const App: React.FC = () => {
       setLoading(true);
       const saveInterval = setInterval(async () => {
         const startTime = Date.now(); // Record the start time
-        await saveDocuments(documents);
-        const endTime = Date.now(); // Record the end time
-        setLoading(false);
-        setHasChanges(false);
-        setSaveDuration(endTime - startTime);
+        await saveDocuments(documents)
+          .then(() => {
+            const endTime = Date.now(); // Record the end time
+            setLoading(false);
+            setHasChanges(false);
+            setSaveDuration(endTime - startTime);
+          })
+          .catch((error) => {
+            console.error("Error saving documents: ", error);
+            setError(error);
+          });
       }, 5000);
 
       return () => {
@@ -79,43 +90,56 @@ const App: React.FC = () => {
         maxHeight: "100vh",
       }}
     >
-      <DocumentGrid
-        documents={documents}
-        handleDocumentChange={handleDocumentChange}
-        loading={loading}
-      />
-      <div
-        style={{
-          marginLeft: "20%",
-        }}
-      >
-        {loading && (
-          <span
+      {!error ? (
+        <>
+          <DocumentGrid
+            documents={documents}
+            handleDocumentChange={handleDocumentChange}
+            loading={loading}
+          />
+          <div
             style={{
-              fontWeight: 600,
-              fontSize: "1.2em",
+              marginLeft: "20%",
             }}
           >
-            Saving...
-          </span>
-        )}
-      </div>
-      <div
-        style={{
-          marginLeft: "20%",
-        }}
-      >
-        Time Taken for last Save:{" "}
-        <span
-          style={{
-            fontWeight: 600,
-            fontSize: "1.2em",
+            {loading && (
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: "1.2em",
+                }}
+              >
+                Saving...
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              marginLeft: "20%",
+            }}
+          >
+            Time Taken for last Save:{" "}
+            <span
+              style={{
+                fontWeight: 600,
+                fontSize: "1.2em",
+              }}
+            >
+              {saveDuration}
+            </span>{" "}
+            ms
+          </div>
+        </>
+      ) : (
+        <Box
+          sx={{
+            marginLeft: "20%",
           }}
         >
-          {saveDuration}
-        </span>{" "}
-        ms
-      </div>
+          <h1>Something went wrong</h1>
+          <p>{error.message}</p>
+        </Box>
+      )}
     </Box>
   );
 };
