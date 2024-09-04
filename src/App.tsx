@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DocumentGrid } from "./components/DocumentGrid";
 import {
   getLocalStorage,
   saveDocuments,
   setLocalStorage,
 } from "./helper/session";
-import _ from "lodash";
 import { Box } from "@mui/material";
 
 interface Document {
@@ -19,8 +18,10 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   const [saveDuration, setSaveDuration] = useState<number>(0);
+  const [timeSinceLastSave, setTimeSinceLastSave] = useState<number>(0);
   const [error, setError] = useState<Error | null>(null);
 
+  // Fetch documents on initial load
   useEffect(() => {
     const storedDocs = getLocalStorage();
     if (!storedDocs) {
@@ -31,55 +32,56 @@ const App: React.FC = () => {
         setLocalStorage(data);
       };
 
-      // error handling
       fetchDocuments().catch((error) => {
         console.error("Error fetching documents: ", error);
         setError(error);
       });
-    } else setDocuments(storedDocs);
+    } else {
+      setDocuments(storedDocs);
+    }
   }, []);
 
+  // Auto saving every 5 sec only if there are changes
   useEffect(() => {
-    if (hasChanges) {
-      setLoading(true);
-      const saveInterval = setInterval(async () => {
-        const startTime = Date.now(); // Record the start time
+    const saveInterval = setInterval(async () => {
+      if (hasChanges) {
+        setLoading(true);
+        const startTime = Date.now();
         await saveDocuments(documents)
           .then(() => {
-            const endTime = Date.now(); // Record the end time
-            setLoading(false);
-            setHasChanges(false);
+            const endTime = Date.now();
             setSaveDuration(endTime - startTime);
+            setHasChanges(false);
+            setLoading(false);
+            setTimeSinceLastSave(0);
           })
           .catch((error) => {
             console.error("Error saving documents: ", error);
             setError(error);
+            setLoading(false);
           });
-      }, 5000);
+      }
+    }, 5000);
 
-      return () => {
-        clearInterval(saveInterval);
-      };
-    }
+    return () => clearInterval(saveInterval);
   }, [documents, hasChanges]);
 
-  // comment:  works as expected but removed to due reduce code complexity
-  // const debouncedSetDocuments = useCallback(
-  //   _.debounce((newDocuments: Document[]) => {
-  //     setDocuments(newDocuments);
-  //     setHasChanges(true);
-  //   }, 2000),
-  //   [] // Dependencies array is empty to ensure the function is memoized
-  // );
+  // Track time since the last save
+  useEffect(() => {
+    const timeInterval = setInterval(() => {
+      if (!loading) {
+        setTimeSinceLastSave((prevTime) => prevTime + 1);
+      }
+    }, 1000); // Increment every second
 
-  // const handleDocumentChange = (newDocuments: Document[]) => {
-  //   debouncedSetDocuments(newDocuments);
-  // };
+    return () => clearInterval(timeInterval);
+  }, [loading]);
 
   const handleDocumentChange = (newDocuments: Document[]) => {
     setDocuments(newDocuments);
     setHasChanges(true);
   };
+
   return (
     <Box
       sx={{
@@ -102,23 +104,39 @@ const App: React.FC = () => {
               marginLeft: "20%",
             }}
           >
-            {loading && (
-              <span
-                style={{
-                  fontWeight: 600,
-                  fontSize: "1.2em",
-                }}
-              >
-                Saving...
-              </span>
-            )}
+            <span
+              style={{
+                fontWeight: 600,
+                fontSize: "1.2em",
+              }}
+            >
+              {loading
+                ? "Saving..."
+                : hasChanges
+                ? "Unsaved changes....saving in 5 seconds"
+                : "All changes saved"}
+            </span>
           </div>
           <div
             style={{
               marginLeft: "20%",
             }}
           >
-            Time Taken for last Save:{" "}
+            <span
+              style={{
+                fontWeight: 600,
+                fontSize: "1.2em",
+              }}
+            >
+              Last saved {timeSinceLastSave} seconds ago
+            </span>
+          </div>
+          <div
+            style={{
+              marginLeft: "20%",
+            }}
+          >
+            Time Taken for Last Save:
             <span
               style={{
                 fontWeight: 600,
@@ -126,7 +144,7 @@ const App: React.FC = () => {
               }}
             >
               {saveDuration}
-            </span>{" "}
+            </span>
             ms
           </div>
         </>

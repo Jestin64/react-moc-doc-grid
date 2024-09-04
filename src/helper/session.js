@@ -7,14 +7,19 @@ export const getLocalStorage = () => {
 };
 
 export const saveDocuments = async (documents) => {
-  // code line to simulate throwing error
-  // throw new Error("Network Error");
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      setLocalStorage(documents);
-      resolve();
-    }, 500); // to simulate network delay
-  });
+  try {
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        setLocalStorage(documents);
+        resolve();
+      }, 500);
+    });
+
+    console.log("Documents saved successfully");
+  } catch (error) {
+    console.error("Failed to save documents:", error.message);
+    throw error; // Re-throw the error if needed for further handling
+  }
 };
 
 // hypothetical rest api calls

@@ -11,7 +11,7 @@ Mocked backend rest api calls:
 
 # Working (Test in incognito for a fresh start):
 
-    1) you should see a set of 5 cards with thumbnails and a text at the bottom showing the time taken to save the last data order
+    1) you should see a set of 5 cards with thumbnails and a text at the bottom showing the time taken to save the last data order.
     2) When dragging the order of the cards, after 5 seconds the auto save mock api will be called and and the new data order will be saved to localstorage.
     3) If no change detected, it will not auto save.
 
